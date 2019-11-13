@@ -1,0 +1,85 @@
+import cv2
+import numpy as np
+import copy
+import argparse as ap
+import time
+
+def remove_background(frame, background_model, learningRate):
+    fgmask = background_model.apply(frame, learningRate=learningRate)
+    kernel = np.ones((3, 3), np.uint8)
+    fgmask = cv2.erode(fgmask, kernel, iterations=1)
+    res = cv2.bitwise_and(frame, frame, mask=fgmask)
+    return res
+
+def get_args():
+    p = ap.ArgumentParser()
+    p.add_argument("--data-dir", type=str, default="data")
+    p.add_argument("--gesture", type=str, choices=["palm", "fist", "wave", "L", "pointup", "pointdown"], default="palm")
+    p.add_argument("--start-num", type=int, default=0)
+    return p.parse_args()
+    
+args = get_args()
+num = args.start_num
+directory = args.data_dir
+gesture = args.gesture
+
+cap_region_x_begin = 0.5  # start point/total width
+cap_region_y_end = 0.8  # start point/total width
+threshold = 60  # binary threshold
+blurValue = 41  # GaussianBlur parameter
+bgSubThreshold = 50
+learningRate = 0
+
+isBgCaptured = False  # bool, whether the background captured
+bgModel = None
+
+# Camera
+camera = cv2.VideoCapture(0)
+camera.set(10, 200)
+
+while camera.isOpened():
+    ret, frame = camera.read()
+    frame = cv2.bilateralFilter(frame, 5, 50, 100)  # smoothing filter
+    frame = cv2.flip(frame, 1)  # flip the frame horizontally
+    cv2.rectangle(frame, (int(cap_region_x_begin * frame.shape[1]), 0),
+                  (frame.shape[1], int(cap_region_y_end * frame.shape[0])), (255, 0, 0), 2)
+
+    cv2.imshow('original', frame)
+    
+    if isBgCaptured == True:
+        img = remove_background(frame, bgModel, learningRate)
+        img = img[0:int(cap_region_y_end * frame.shape[0]),
+              int(cap_region_x_begin * frame.shape[1]):frame.shape[1]]  # clip the ROI
+
+        # convert the image into binary image
+        gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+        blur = cv2.GaussianBlur(gray, (blurValue, blurValue), 0)
+
+        ret, thresh = cv2.threshold(blur, threshold, 255, cv2.THRESH_BINARY + cv2.THRESH_OTSU)
+
+        cv2.imshow('threshold', thresh)
+
+    # Keyboard OP
+    k = cv2.waitKey(10)
+
+    if k == 27:  # press ESC to exit all windows at any time
+        break
+    elif k == ord('b'):  # press 'b' to capture the background
+        bgModel = cv2.createBackgroundSubtractorMOG2(0, bgSubThreshold)
+        isBgCaptured = True
+        print('Background captured')
+    elif k == ord('r'):  # press 'r' to reset the background
+        time.sleep(1)
+        bgModel = None
+        isBgCaptured = False
+        print('Reset background')
+    elif k == 32:
+        # If space bar pressed
+        cv2.imshow('original', frame)
+        # copies 1 channel BW image to all 3 RGB channels
+#        target = np.stack((thresh,) * 3, axis=-1)
+#        target = cv2.resize(target, (224, 224))
+#        target = target.reshape(1, 224, 224, 3)
+        cv2.imwrite(directory + '/' + gesture + '_' + 'bg' + '_'+ str(num)+ '.png', frame)
+        cv2.imwrite(directory + '/' + gesture + '_'+ str(num)+ '.png', img)
+        num += 1

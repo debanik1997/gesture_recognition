@@ -1,1 +1,3 @@
-# gesture_recognition
+# Gesture Recognition for Alexa Control
+
+### Sick README
