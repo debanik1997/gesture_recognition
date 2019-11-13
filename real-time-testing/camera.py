@@ -72,7 +72,6 @@ while camera.isOpened():
 		isBgCaptured = True
 		print('Background captured')
 	elif k == ord('r'):  # press 'r' to reset the background
-		time.sleep(1)
 		bgModel = None
 		isBgCaptured = False
 		print('Reset background')
