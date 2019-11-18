@@ -80,5 +80,6 @@ while camera.isOpened():
 #        target = np.stack((thresh,) * 3, axis=-1)
 #        target = cv2.resize(target, (224, 224))
 #        target = target.reshape(1, 224, 224, 3)
+        cv2.imwrite(directory + '/' + gesture + '_' + 'bg' + '_'+ str(num)+ '.png', frame)
         cv2.imwrite(directory + '/' + gesture + '_'+ str(num)+ '.png', img)
         num += 1
