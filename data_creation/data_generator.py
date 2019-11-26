@@ -14,7 +14,7 @@ def remove_background(frame, background_model, learningRate):
 def get_args():
     p = ap.ArgumentParser()
     p.add_argument("--data-dir", type=str, default="data")
-    p.add_argument("--gesture", type=str, choices=["palm", "fist", "wave", "L", "pointup", "pointdown"], default="palm")
+    p.add_argument("--gesture", type=str, choices=["pointup", "wave", "skip", "rockon"], default="skip")
     p.add_argument("--start-num", type=int, default=0)
     return p.parse_args()
     
@@ -80,6 +80,5 @@ while camera.isOpened():
 #        target = np.stack((thresh,) * 3, axis=-1)
 #        target = cv2.resize(target, (224, 224))
 #        target = target.reshape(1, 224, 224, 3)
-        cv2.imwrite(directory + '/' + gesture + '_' + 'bg' + '_'+ str(num)+ '.png', frame)
         cv2.imwrite(directory + '/' + gesture + '_'+ str(num)+ '.png', img)
         num += 1

@@ -4,7 +4,7 @@ import copy
 # from keras.models import load_model
 import tensorflow as tf 
 from tools import remove_background, predict_rgb_image_vgg
-model = tf.keras.models.load_model("../models/temp_model.h5") # open saved model/weights from .h5 file
+model = tf.keras.models.load_model("../models/trained_model.h5") # open saved model/weights from .h5 file
 
 cap_region_x_begin = 0.5  # start point/total width
 cap_region_y_end = 0.8  # start point/total width
