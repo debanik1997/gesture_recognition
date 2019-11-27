@@ -76,7 +76,7 @@ if __name__ == "__main__":
 	print("START")
 	relative_path = './data_creation/data/'
 	rgb = True
-	X_data, y_data = walk_file_tree(relative_path)
+	X_data, y_data = walk_file_tree(relative_path) # X_data = labelling; y_data = images
 	silhouette = Data()
 	silhouette.X_data, silhouette.y_data = walk_file_tree(relative_path)
 
@@ -97,16 +97,18 @@ if __name__ == "__main__":
 	optimizer1 = optimizers.Adam()
 
 	base_model = vgg_base  # Topless
-	# Add top layer
+	
+	# Adding top layers
 	x = base_model.output
 	x = Flatten()(x)
 	x = Dense(128, activation='relu', name='fc1')(x)
 	x = Dense(128, activation='relu', name='fc2')(x)
 	x = Dense(128, activation='relu', name='fc3')(x)
-	x = Dropout(0.5)(x)
+	x = Dropout(0.5)(x) # turns off activation of neurons during training
 	x = Dense(64, activation='relu', name='fc4')(x)
 	predictions = Dense(5, activation='softmax')(x)
 
+	# new model with top layers and predictions
 	model = Model(inputs=base_model.input, outputs=predictions)
 
 	# Train top layers only
@@ -115,6 +117,8 @@ if __name__ == "__main__":
 
 	callbacks_list = [tensorflow.keras.callbacks.EarlyStopping(monitor='val_accuracy', patience=3, verbose=1)]
 
+	# loss = loss value to be minimized; metrics = list of metrics to be evaluated during training and testing 
 	model.compile(optimizer='Adam', loss='categorical_crossentropy', metrics=['accuracy'])
 
+	# (input data, target data, )
 	model.fit(X_train, y_train, epochs=50, batch_size=64, validation_data=(X_train, y_train), verbose=1, callbacks=[early_stopping, model_checkpoint])

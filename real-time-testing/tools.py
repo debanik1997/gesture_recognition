@@ -6,6 +6,11 @@ from gtts import gTTS
 # play the converted audio 
 import os 
 
+gesture_names = {0: 'Hello Alexa',
+				 1: 'Volume Up',
+				 2: 'Play music',
+				 3: 'Next song'}
+
 def remove_background(frame, background_model, learningRate):
 	fgmask = background_model.apply(frame, learningRate=learningRate)
 	kernel = np.ones((3, 3), np.uint8)
@@ -17,11 +22,6 @@ def predict_rgb_image_vgg(image, model):
 	image = np.array(image, dtype='float32')
 	image /= 255
 	pred_array = model.predict(image)
-
-	gesture_names = {0: 'Hello Alexa',
-				 1: 'Volume Up',
-				 2: 'Play music',
-				 3: 'Next song'}
 
 	# model.predict() returns an array of probabilities - 
 	# np.argmax grabs the index of the highest probability.
