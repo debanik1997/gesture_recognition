@@ -121,4 +121,4 @@ if __name__ == "__main__":
 	model.compile(optimizer='Adam', loss='categorical_crossentropy', metrics=['accuracy'])
 
 	# (input data, target data, )
-	model.fit(X_train, y_train, epochs=50, batch_size=64, validation_data=(X_train, y_train), verbose=1, callbacks=[early_stopping, model_checkpoint])
+	model.fit(X_train, y_train, epochs=50, batch_size=64, validation_data=(X_test, y_test), verbose=1, callbacks=[early_stopping, model_checkpoint])
