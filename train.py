@@ -120,5 +120,6 @@ if __name__ == "__main__":
 	# loss = loss value to be minimized; metrics = list of metrics to be evaluated during training and testing 
 	model.compile(optimizer='Adam', loss='categorical_crossentropy', metrics=['accuracy'])
 
-	# (input data, target data, )
+	# (input data, target data, validation_data = used to select the best perfoming approach)
 	model.fit(X_train, y_train, epochs=50, batch_size=64, validation_data=(X_test, y_test), verbose=1, callbacks=[early_stopping, model_checkpoint])
+
