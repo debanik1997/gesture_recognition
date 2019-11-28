@@ -73,16 +73,21 @@ class Data(object):
 		return self.X_data, self.y_data
 
 if __name__ == "__main__":
-	print("START")
 	relative_path = './data_creation/data/'
 	rgb = True
-	X_data, y_data = walk_file_tree(relative_path) # X_data = labelling; y_data = images
+	print("getting data")
+	X_data, y_data = walk_file_tree(relative_path)
 	silhouette = Data()
 	silhouette.X_data, silhouette.y_data = walk_file_tree(relative_path)
 
 	# X_train_rgb, X_test_rgb, y_train_rgb, y_test_rgb = train_test_split(image_rgb, y_data, test_size = 0.2, random_state=12, stratify=y_data)
+	print("train and test")
 	X_train, X_test, y_train, y_test = train_test_split(X_data, y_data, test_size = 0.2, random_state=12, stratify=y_data)
+	print("traing and val")
+	X_train, X_val, y_train, y_val = train_test_split(X_train, y_train, test_size = 0.2, random_state=12, stratify=y_train)
+	
 	file_path = './models/temp_model.h5'
+	
 	model_checkpoint = ModelCheckpoint(filepath=file_path, save_best_only=True)
 
 	early_stopping = EarlyStopping(monitor='val_accuracy',
@@ -97,29 +102,35 @@ if __name__ == "__main__":
 	optimizer1 = optimizers.Adam()
 
 	base_model = vgg_base  # Topless
-	
-	# Adding top layers
+	# Add top layer
 	x = base_model.output
 	x = Flatten()(x)
 	x = Dense(128, activation='relu', name='fc1')(x)
 	x = Dense(128, activation='relu', name='fc2')(x)
 	x = Dense(128, activation='relu', name='fc3')(x)
-	x = Dropout(0.5)(x) # turns off activation of neurons during training
+	x = Dropout(0.5)(x)
 	x = Dense(64, activation='relu', name='fc4')(x)
 	predictions = Dense(5, activation='softmax')(x)
 
-	# new model with top layers and predictions
 	model = Model(inputs=base_model.input, outputs=predictions)
 
 	# Train top layers only
 	for layer in base_model.layers:
-	    layer.trainable = False
+		layer.trainable = False
 
 	callbacks_list = [tensorflow.keras.callbacks.EarlyStopping(monitor='val_accuracy', patience=3, verbose=1)]
 
-	# loss = loss value to be minimized; metrics = list of metrics to be evaluated during training and testing 
 	model.compile(optimizer='Adam', loss='categorical_crossentropy', metrics=['accuracy'])
 
-	# (input data, target data, validation_data = used to select the best perfoming approach)
-	model.fit(X_train, y_train, epochs=50, batch_size=64, validation_data=(X_test, y_test), verbose=1, callbacks=[early_stopping, model_checkpoint])
+	print("training")
+	model.fit(X_train, y_train, epochs=10, batch_size=64, validation_data=(X_val, y_val), verbose=1, callbacks=[early_stopping, model_checkpoint])
 
+	print('\n# Evaluate on test data')
+	results = model.evaluate(X_test, y_test, batch_size=128)
+	print('test loss, test acc:', results)
+
+	# Generate predictions (probabilities -- the output of the last layer)
+	# on new data using `predict`
+	print('\n# Generate predictions for 3 samples')
+	predictions = model.predict(X_test[:3])
+	print('predictions shape:', predictions.shape)
