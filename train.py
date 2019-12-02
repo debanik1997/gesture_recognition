@@ -72,6 +72,26 @@ class Data(object):
 	def get_data(self):
 		return self.X_data, self.y_data
 
+def augmentate_data(img_path, train_batch_size, directory, prefix, generation_count):
+	
+	test_datagen = ImageDataGenerator(rescale=1./255, 
+        rotation_range=40,
+        width_shift_range=0.2,
+        height_shift_range=0.2,
+        shear_range=0.2) 
+
+	x = load_img(img_path)
+    x = img_to_array(x)
+    x = x.reshape((1, ) + x.shape)
+    
+    i = 0
+    for batch in generator.flow(x, batch_size=train_batch_size,
+                          save_to_dir=directory, save_prefix=prefix, save_format='jpeg'):
+        i += 1
+        if i > generation_count:
+            break
+
+
 if __name__ == "__main__":
 	relative_path = './data_creation/data/'
 	rgb = True
@@ -79,6 +99,12 @@ if __name__ == "__main__":
 	X_data, y_data = walk_file_tree(relative_path)
 	silhouette = Data()
 	silhouette.X_data, silhouette.y_data = walk_file_tree(relative_path)
+
+	train_batch_size = 64
+
+	# run augmentation function on a single image of each hand pose, and save them
+	augmentate_data('./data/wave_0.png', train_batch_size, './data', 'wave', 20)
+
 
 	# X_train_rgb, X_test_rgb, y_train_rgb, y_test_rgb = train_test_split(image_rgb, y_data, test_size = 0.2, random_state=12, stratify=y_data)
 	print("train and test")
